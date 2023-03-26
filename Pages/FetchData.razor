@@ -1,0 +1,52 @@
+﻿@page "/fetchdata"
+
+@using MauiApp2.Data
+@using Plugin.BLE.Abstractions.Contracts;
+@using Plugin.BLE.Abstractions.EventArgs
+@inject BLEService BLEService
+
+<h1>Bluetooth gavl</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (BLEService.devices == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>RSSI</th>
+                <th>State</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in BLEService.devices)
+            {
+                <tr>
+                    <td>@device.Id</td>
+                    <td>@device.Name</td>
+                    <td>@device.Rssi</td>
+                    <td>@device.State</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        BLEService.DevicesChanged += StateHasChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeAsync(BLEService.BeginScan);
+    }
+}
