@@ -1,7 +1,8 @@
 using Plugin.BLE;
 using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.Exceptions;
 
-namespace MauiApp2.Data;
+namespace MauiApp2.Services;
 
 public class BLEService
 {
@@ -9,7 +10,7 @@ public class BLEService
 
     public List<IDevice> devices = new();
 
-    private IAdapter adapter;
+    private readonly IAdapter adapter;
 
     public BLEService()
     {
@@ -23,10 +24,14 @@ public class BLEService
         adapter.StopScanningForDevicesAsync();
     }
 
-    private void Adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs args)
+    private void Adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs a)
     {
-        devices.Add(args.Device);
-        Console.WriteLine($"Found device BLEService: {args.Device.Id} {args.Device.Name}");
+        IDevice device = a.Device;
+
+        Console.WriteLine($"Found device: {device.Id} {device.Name}");
+        devices.Add(device);
+        devices.Sort((deviceA, deviceB) => deviceB.Rssi - deviceA.Rssi);
+
         DevicesChanged?.Invoke();
     }
 
@@ -62,8 +67,34 @@ public class BLEService
 
         await Console.Out.WriteLineAsync("Scanning now");
 
-        adapter.ScanMode = ScanMode.LowPower;
+        adapter.ScanMode = ScanMode.LowLatency;
         await adapter.StartScanningForDevicesAsync();
+    }
+
+    public void ConnectToDevice(IDevice device, Action<bool, string> onComplete)
+    {
+        Task.Run(async () =>
+        { 
+            try
+            {
+                await Console.Out.WriteLineAsync("BLEService: Connecting to device...");
+                await adapter.ConnectToDeviceAsync(device);
+                await Console.Out.WriteLineAsync("BLEService: Connected to device.");
+                onComplete(true, null);
+            }
+            catch (DeviceConnectionException ex)
+            {
+                // specific
+                await Console.Out.WriteLineAsync($"BLESERVICE DeviceConnectionException: {ex.Message}");
+                onComplete(false, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // generic
+                await Console.Out.WriteLineAsync($"BLESERVICE Generic exception: {ex.Message}");
+                onComplete(false, ex.Message);
+            }
+        });
     }
 
     private async Task<bool> CheckBluetoothStatus()

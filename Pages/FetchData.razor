@@ -1,37 +1,44 @@
-﻿@page "/fetchdata"
+﻿@page "/"
 
-@using MauiApp2.Data
-@using Plugin.BLE.Abstractions.Contracts;
+@using MauiApp2.Services
+@using Plugin.BLE.Abstractions;
+@using Plugin.BLE.Abstractions.Contracts
 @using Plugin.BLE.Abstractions.EventArgs
+
 @inject BLEService BLEService
 
 <h1>Bluetooth gavl</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
+<p>What the gavl.</p>
 
 @if (BLEService.devices == null)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if (isConnecting)
+{
+    <p><em>Connecting to device...</em></p>
+}
+else if (connectedToDevice != null)
+{
+    <p><em>Connected to device: @(GetDeviceDisplayName(connectedToDevice))</em></p>
+}
+else 
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
                 <th>Name</th>
                 <th>RSSI</th>
-                <th>State</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             @foreach (var device in BLEService.devices)
             {
-                <tr>
-                    <td>@device.Id</td>
-                    <td>@device.Name</td>
+                <tr @onclick="() => OnClickConnect(device)">
+                    <td>@(GetDeviceDisplayName(device))</td>
                     <td>@device.Rssi</td>
-                    <td>@device.State</td>
                 </tr>
             }
         </tbody>
@@ -39,6 +46,13 @@ else
 }
 
 @code {
+    [Inject]
+    private IPromptService promptService{ get; set; }
+
+    private bool isConnecting;
+
+    private IDevice connectedToDevice;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -48,5 +62,38 @@ else
     protected override async Task OnInitializedAsync()
     {
         await InvokeAsync(BLEService.BeginScan);
+    }
+
+    private void OnClickConnect(IDevice device)
+    {
+        promptService.ShowConfirmation("Connect to device", $"Would you like to connect to the device \"{GetDeviceDisplayName(device)}\"?", (accepted) =>
+        {
+            if (accepted)
+            {
+                isConnecting = true;
+                InvokeAsync(StateHasChanged);
+
+                BLEService.ConnectToDevice(device, (success, msg) =>
+                {
+                    if (success)
+                    {
+                        connectedToDevice = device;
+                        promptService.ShowAlert("Connection succeeded", $"Successfully connected to the device \"{GetDeviceDisplayName(device)}\"!");
+                    }
+                    else
+                    {
+                        promptService.ShowAlert("Connection failed", $"Could not connect to device: {msg}.");
+                    }
+
+                    isConnecting = false;
+                    InvokeAsync(StateHasChanged);
+                });
+            }
+        });
+    }
+
+    private static string GetDeviceDisplayName(IDevice device)
+    {
+        return string.IsNullOrEmpty(device.Name) ? "Unknown device" : device.Name;
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using MauiApp2.Data;
+using MauiApp2.Services;
 
 namespace MauiApp2;
 
@@ -23,6 +23,7 @@ public static class MauiProgram
 #endif
 
         builder.Services.AddSingleton<BLEService>();
+        builder.Services.AddSingleton<IPromptService, PromptService>();
 
         return builder.Build();
     }
