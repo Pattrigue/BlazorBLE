@@ -78,7 +78,10 @@ public class BLEService
             try
             {
                 await Console.Out.WriteLineAsync("BLEService: Connecting to device...");
+
                 await adapter.ConnectToDeviceAsync(device);
+                await PrintDeviceServicesAndCharacteristics(device);
+
                 await Console.Out.WriteLineAsync("BLEService: Connected to device.");
                 onComplete(true, null);
             }
@@ -95,6 +98,30 @@ public class BLEService
                 onComplete(false, ex.Message);
             }
         });
+    }
+
+    private static async Task PrintDeviceServicesAndCharacteristics(IDevice device)
+    {
+        IReadOnlyList<IService> services = await device.GetServicesAsync();
+
+        foreach (IService service in services)
+        {
+            await Console.Out.WriteLineAsync($"BLEService: Found service {service.Name}.");
+
+            IReadOnlyList<ICharacteristic> chararcteristics = await service.GetCharacteristicsAsync();
+
+            if (chararcteristics != null)
+            {
+                await Console.Out.WriteLineAsync($"BLEService: Found characteristics: ");
+
+                foreach (var characteristic in chararcteristics)
+                {
+                    await Console.Out.WriteAsync($"- {characteristic.Name}");
+                }
+
+                await Console.Out.WriteLineAsync("");
+            }
+        }
     }
 
     private async Task<bool> CheckBluetoothStatus()
