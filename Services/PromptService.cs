@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace MauiApp2.Services
+﻿namespace MauiApp2.Services
 {
     internal sealed class PromptService : IPromptService
     {

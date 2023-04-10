@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using MauiApp2.Services;
+﻿using MauiApp2.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MauiApp2;
 

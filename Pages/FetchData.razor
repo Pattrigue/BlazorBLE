@@ -22,6 +22,8 @@ else if (isConnecting)
 else if (connectedToDevice != null)
 {
     <p><em>Connected to device: @(GetDeviceDisplayName(connectedToDevice))</em></p>
+    <p>RSSI: @(connectedToDevice.Rssi)</p>
+    <p>Estimated distance: @(Math.Round(EstimateDistanceFromRssi(connectedToDevice.Rssi, -54), 2)) m</p>
 }
 else 
 {
@@ -51,6 +53,8 @@ else
 
     private bool isConnecting;
 
+    private PeriodicTimer periodicTimer;
+
     private IDevice connectedToDevice;
 
     protected override void OnInitialized()
@@ -79,6 +83,7 @@ else
                     {
                         connectedToDevice = device;
                         promptService.ShowAlert("Connection succeeded", $"Successfully connected to the device \"{GetDeviceDisplayName(device)}\"!");
+                        InvokeAsync(UpdateRssiPeriodically);
                     }
                     else
                     {
@@ -90,6 +95,32 @@ else
                 });
             }
         });
+    }
+
+    private async void UpdateRssiPeriodically()
+    {
+        if (periodicTimer != null)
+        {
+            periodicTimer.Dispose();
+        }
+        
+        periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            await connectedToDevice.UpdateRssiAsync();
+            StateHasChanged();
+        }
+    }
+
+    public static double EstimateDistanceFromRssi(int rssi, int txPower)
+    {
+        // The TX power is the signal strength (in dBm) at 1 meter from the device
+        // The RSSI is the signal strength (in dBm) received from the device
+        // Calculate the distance (in meters) based on the logarithmic path loss model
+        double distance = Math.Pow(10, ((double)txPower - rssi) / (10 * 2));
+
+        return distance;
     }
 
     private static string GetDeviceDisplayName(IDevice device)

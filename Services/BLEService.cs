@@ -36,7 +36,7 @@ public class BLEService
     }
 
     public async void BeginScan()
-	{
+    {
         PermissionStatus locationstatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
 
         await Console.Out.WriteLineAsync("Begin scan");
@@ -74,7 +74,7 @@ public class BLEService
     public void ConnectToDevice(IDevice device, Action<bool, string> onComplete)
     {
         Task.Run(async () =>
-        { 
+        {
             try
             {
                 await Console.Out.WriteLineAsync("BLEService: Connecting to device...");
