@@ -23,7 +23,20 @@ else if (connectedToDevice != null)
 {
     <p><em>Connected to device: @(GetDeviceDisplayName(connectedToDevice))</em></p>
     <p>RSSI: @(connectedToDevice.Rssi)</p>
-    <p>Estimated distance: @(Math.Round(EstimateDistanceFromRssi(connectedToDevice.Rssi, -54), 2)) m</p>
+    <br />
+    <p>txPower = @(txPower) dBm</p>
+    <div style="display: flex; flex-direction: row; align-items: center;">
+        <input type="range" min="-100" max="0" step="1" @bind="txPower" @bind:event="oninput" style="width: 100%" />
+    </div>
+    <br />
+    <p>N = @(n)</p>
+    <div style="display: flex; flex-direction: row; align-items: center;">
+        <input type="range" min="2" max="4" step="0.01" @bind="n" @bind:event="oninput" style="width: 100%" />
+    </div>
+    <br />
+    <p>Estimated distance: @(Math.Round(LogDistancePathLoss(connectedToDevice.Rssi), 2)) m</p>
+    <p>Average distance: @(Math.Round(AverageDistance(), 2)) m</p>
+    <button @onclick=ClearMeasurements>Clear measurements</button>
 }
 else 
 {
@@ -52,6 +65,11 @@ else
     private IPromptService promptService{ get; set; }
 
     private bool isConnecting;
+
+    private double txPower = -50;
+    private double n = 3;
+
+    private List<double> measuredDistances = new List<double>();
 
     private PeriodicTimer periodicTimer;
 
@@ -103,7 +121,7 @@ else
         {
             periodicTimer.Dispose();
         }
-        
+
         periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
         while (await periodicTimer.WaitForNextTickAsync())
@@ -113,15 +131,33 @@ else
         }
     }
 
-    public static double EstimateDistanceFromRssi(int rssi, int txPower)
+    private double LogDistancePathLoss(double rssi)
     {
-        // The TX power is the signal strength (in dBm) at 1 meter from the device
-        // The RSSI is the signal strength (in dBm) received from the device
-        // Calculate the distance (in meters) based on the logarithmic path loss model
-        double distance = Math.Pow(10, ((double)txPower - rssi) / (10 * 2));
+        double exp = (txPower - rssi) / (10 * n);
+        double distance = Math.Pow(10, exp);
+
+        measuredDistances.Add(distance);
 
         return distance;
     }
+
+    private double AverageDistance()
+    {
+        if (measuredDistances.Count == 0) return 0;
+
+        double averageDistance = 0;
+
+        foreach (double measuredDistance in measuredDistances)
+        {
+            averageDistance += measuredDistance;
+        }
+
+        averageDistance /= measuredDistances.Count;
+
+        return averageDistance;
+    }
+
+    private void ClearMeasurements() => measuredDistances.Clear();
 
     private static string GetDeviceDisplayName(IDevice device)
     {
