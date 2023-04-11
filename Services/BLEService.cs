@@ -124,7 +124,7 @@ public class BLEService
 
                 foreach (var characteristic in chararcteristics)
                 {
-                    await Console.Out.WriteAsync($"- {characteristic.Name}");
+                    await Console.Out.WriteLineAsync($"- {characteristic.Name}");
                 }
 
                 await Console.Out.WriteLineAsync("");
