@@ -49,7 +49,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var device in BLEService.devices)
+            @foreach (var device in BLEService.GetKnownDevices())
             {
                 <tr @onclick="() => OnClickConnect(device)">
                     <td>@(GetDeviceDisplayName(device))</td>
@@ -81,10 +81,10 @@ else
         BLEService.DevicesChanged += StateHasChanged;
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await InvokeAsync(BLEService.BeginScan);
-    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await InvokeAsync(BLEService.BeginScan);
+    // }
 
     private void OnClickConnect(IDevice device)
     {
@@ -100,6 +100,7 @@ else
                     if (success)
                     {
                         connectedToDevice = device;
+                        connectedToDevice.UpdateConnectionInterval(ConnectionInterval.High);
                         promptService.ShowAlert("Connection succeeded", $"Successfully connected to the device \"{GetDeviceDisplayName(device)}\"!");
                         InvokeAsync(UpdateRssiPeriodically);
                     }

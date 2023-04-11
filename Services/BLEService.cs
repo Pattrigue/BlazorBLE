@@ -1,5 +1,6 @@
 using Plugin.BLE;
 using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
 
 namespace MauiApp2.Services;
@@ -24,7 +25,7 @@ public class BLEService
         adapter.StopScanningForDevicesAsync();
     }
 
-    private void Adapter_DeviceDiscovered(object sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs a)
+    private void Adapter_DeviceDiscovered(object sender, DeviceEventArgs a)
     {
         IDevice device = a.Device;
 
@@ -71,12 +72,19 @@ public class BLEService
         await adapter.StartScanningForDevicesAsync();
     }
 
+    public IReadOnlyList<IDevice> GetKnownDevices() => adapter.GetSystemConnectedOrPairedDevices();
+
     public void ConnectToDevice(IDevice device, Action<bool, string> onComplete)
     {
         Task.Run(async () =>
         {
             try
             {
+                if (adapter.IsScanning)
+                {
+                    await adapter.StopScanningForDevicesAsync();
+                }
+
                 await Console.Out.WriteLineAsync("BLEService: Connecting to device...");
 
                 await adapter.ConnectToDeviceAsync(device);
