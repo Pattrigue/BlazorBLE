@@ -13,6 +13,11 @@
         
         public sbyte TxPower { get; }
 
+        /// <summary>
+        /// Wrapper class for the KBeacon advertising packet.
+        /// </summary>
+        /// <param name="data">The advertising packet for the Proximity beacon.</param>
+        /// <exception cref="ArgumentException"></exception>
         public KBeaconData(byte[] data)
         {
             if (data.Length != ByteCount)
