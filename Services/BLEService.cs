@@ -1,7 +1,9 @@
 using Plugin.BLE;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
+using Plugin.BLE.Abstractions.Extensions;
 
 namespace MauiApp2.Services;
 
@@ -110,11 +112,30 @@ public class BLEService
 
     private static async Task PrintDeviceServicesAndCharacteristics(IDevice device)
     {
+        await Console.Out.WriteLineAsync("AdvertisementRecords:");
+
+        foreach (var advertisement in device.AdvertisementRecords)
+        {
+            var data = advertisement.Data;
+
+            await Console.Out.WriteLineAsync(advertisement.ToString());
+            await Console.Out.WriteLineAsync(System.Text.Encoding.Default.GetString(data));
+
+            if (advertisement.Type.HasFlag(AdvertisementRecordType.ManufacturerSpecificData))
+            {
+                var uuidBytes = data.Skip(9).ToArray();
+                await Console.Out.WriteLineAsync(uuidBytes.Length.ToString());
+                await Console.Out.WriteLineAsync(uuidBytes.ToHexString());
+
+                await Console.Out.WriteLineAsync($"UUID: {new Guid(uuidBytes)}");
+            }
+        }
+
         IReadOnlyList<IService> services = await device.GetServicesAsync();
 
         foreach (IService service in services)
         {
-            await Console.Out.WriteLineAsync($"BLEService: Found service {service.Name}.");
+            await Console.Out.WriteLineAsync($"BLEService: Found service {service.Name} with ID {service.Id}.");
 
             IReadOnlyList<ICharacteristic> chararcteristics = await service.GetCharacteristicsAsync();
 
@@ -124,7 +145,33 @@ public class BLEService
 
                 foreach (var characteristic in chararcteristics)
                 {
-                    await Console.Out.WriteLineAsync($"- {characteristic.Name}");
+                    await Console.Out.WriteLineAsync($"- Name: {characteristic.Name}");
+
+                    if (characteristic.Value != null)
+                    {
+                        await Console.Out.WriteLineAsync($"- Uuid: {characteristic.Uuid}");
+                        await Console.Out.WriteLineAsync($"- Property type: {characteristic.Properties}");
+                        await Console.Out.WriteLineAsync($"- Write type: {characteristic.WriteType}");
+
+                        if (characteristic.CanRead)
+                        {
+                            var bytes = await characteristic.ReadAsync();
+                            await Console.Out.WriteLineAsync($"- ReadAsync bytes: {bytes.ToHexString()}");
+                        }
+                    }
+
+                    var descriptors = await characteristic.GetDescriptorsAsync();
+
+                    if (descriptors.Count > 0) 
+                    {
+                        await Console.Out.WriteLineAsync($"BLEService: Found descriptors: ");
+
+                        foreach (var descriptor in descriptors)
+                        {
+                            await Console.Out.WriteLineAsync($"Name: {descriptor.Name}");
+                            await Console.Out.WriteLineAsync($"Id: {descriptor.Id}");
+                        }
+                    }
                 }
 
                 await Console.Out.WriteLineAsync("");
