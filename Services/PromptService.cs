@@ -1,4 +1,4 @@
-﻿namespace MauiApp2.Services
+﻿namespace BlazorBLE.Services
 {
     internal sealed class PromptService : IPromptService
     {

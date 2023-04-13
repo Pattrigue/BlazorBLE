@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace MauiApp2.Platforms.iOS;
+namespace BlazorBLE.Platforms.iOS;
 
 public class Program
 {

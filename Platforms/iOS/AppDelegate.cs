@@ -1,6 +1,7 @@
-﻿using Foundation;
+﻿using BlazorBLE;
+using Foundation;
 
-namespace MauiApp2.Platforms.iOS;
+namespace BlazorBLE.Platforms.iOS;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

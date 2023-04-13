@@ -1,7 +1,7 @@
-﻿using MauiApp2.Services;
+﻿using BlazorBLE.Services;
 using Microsoft.Extensions.Logging;
 
-namespace MauiApp2;
+namespace BlazorBLE;
 
 public static class MauiProgram
 {

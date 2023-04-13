@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace MauiApp2.Platforms.MacCatalyst;
+namespace BlazorBLE.Platforms.MacCatalyst;
 
 public class Program
 {

@@ -1,6 +1,6 @@
 ﻿@page "/"
 
-@using MauiApp2.Services
+@using BlazorBLE.Services
 @using Plugin.BLE.Abstractions;
 @using Plugin.BLE.Abstractions.Contracts
 @using Plugin.BLE.Abstractions.EventArgs
@@ -62,7 +62,7 @@ else
 
 @code {
     [Inject]
-    private IPromptService promptService{ get; set; }
+    private IPromptService promptService { get; set; }
 
     private bool isConnecting;
 

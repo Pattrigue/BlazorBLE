@@ -1,3 +1,4 @@
+using BlazorBLE.Data;
 using Plugin.BLE;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
@@ -5,7 +6,7 @@ using Plugin.BLE.Abstractions.EventArgs;
 using Plugin.BLE.Abstractions.Exceptions;
 using Plugin.BLE.Abstractions.Extensions;
 
-namespace MauiApp2.Services;
+namespace BlazorBLE.Services;
 
 public class BLEService
 {
@@ -44,18 +45,22 @@ public class BLEService
 
         await Console.Out.WriteLineAsync("Begin scan");
 
+        await Console.Out.WriteLineAsync(locationstatus.ToString());
+
         if (locationstatus != PermissionStatus.Granted)
         {
             PermissionStatus permissionStatus = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
 
             if (permissionStatus != PermissionStatus.Granted)
             {
-                await Console.Out.WriteLineAsync("No permissions");
+                await Console.Out.WriteLineAsync("Location permission not granted.");
                 return;
             }
         }
 
         bool hasBluetoothPermissions = await CheckBluetoothStatus();
+
+        await Console.Out.WriteLineAsync(hasBluetoothPermissions.ToString());
 
         if (!hasBluetoothPermissions)
         {
@@ -63,7 +68,7 @@ public class BLEService
 
             if (!gotPermission)
             {
-                await Console.Out.WriteLineAsync("no bluetooth?");
+                await Console.Out.WriteLineAsync("Bluetooth permissions not granted.");
                 return;
             }
         }
@@ -119,15 +124,13 @@ public class BLEService
             var data = advertisement.Data;
 
             await Console.Out.WriteLineAsync(advertisement.ToString());
+            await Console.Out.WriteLineAsync(advertisement.Data.Length.ToString());
             await Console.Out.WriteLineAsync(System.Text.Encoding.Default.GetString(data));
 
             if (advertisement.Type.HasFlag(AdvertisementRecordType.ManufacturerSpecificData))
             {
-                var uuidBytes = data.Skip(9).ToArray();
-                await Console.Out.WriteLineAsync(uuidBytes.Length.ToString());
-                await Console.Out.WriteLineAsync(uuidBytes.ToHexString());
-
-                await Console.Out.WriteLineAsync($"UUID: {new Guid(uuidBytes)}");
+                KBeaconData beaconData = new KBeaconData(advertisement.Data);
+                await Console.Out.WriteLineAsync($"BeaconData = {beaconData}");
             }
         }
 

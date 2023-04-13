@@ -1,4 +1,4 @@
-﻿namespace MauiApp2;
+﻿namespace BlazorBLE;
 
 public partial class App : Application
 {
