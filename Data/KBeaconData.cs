@@ -13,39 +13,39 @@
         
         public sbyte TxPower { get; }
 
-        public KBeaconData(byte[] advertisementData)
+        public KBeaconData(byte[] data)
         {
-            if (advertisementData.Length != ByteCount)
+            if (data.Length != ByteCount)
             {
-                throw new ArgumentException($"Number of bytes was {advertisementData.Length}, expected {ByteCount}.");
+                throw new ArgumentException($"Number of bytes was {data.Length}, expected {ByteCount}.");
             }
 
             if (BitConverter.IsLittleEndian)
             {
-                CompanyId = advertisementData.Take(2).ToArray();
+                CompanyId = data.Take(2).ToArray();
                 Uuid = new Guid(
-                    BitConverter.ToInt32(advertisementData.Skip(4).Take(4).ToArray()),
-                    BitConverter.ToInt16(advertisementData.Skip(8).Take(2).ToArray()),
-                    BitConverter.ToInt16(advertisementData.Skip(10).Take(2).ToArray()),
-                    advertisementData.Skip(12).Take(8).ToArray()
+                    BitConverter.ToInt32(data.Skip(4).Take(4).ToArray()),
+                    BitConverter.ToInt16(data.Skip(8).Take(2).ToArray()),
+                    BitConverter.ToInt16(data.Skip(10).Take(2).ToArray()),
+                    data.Skip(12).Take(8).ToArray()
                 );
-                Major = BitConverter.ToUInt16(advertisementData.Skip(20).Take(2).ToArray());
-                Minor = BitConverter.ToUInt16(advertisementData.Skip(22).Take(2).ToArray());
+                Major = BitConverter.ToUInt16(data.Skip(20).Take(2).ToArray());
+                Minor = BitConverter.ToUInt16(data.Skip(22).Take(2).ToArray());
             }
             else
             {
-                CompanyId = advertisementData.Skip(1).Take(2).ToArray();
+                CompanyId = data.Skip(1).Take(2).ToArray();
                 Uuid = new Guid(
-                    BitConverter.ToInt32(advertisementData.Skip(4).Take(4).Reverse().ToArray()),
-                    BitConverter.ToInt16(advertisementData.Skip(8).Take(2).Reverse().ToArray()),
-                    BitConverter.ToInt16(advertisementData.Skip(10).Take(2).Reverse().ToArray()),
-                    advertisementData.Skip(12).Take(8).ToArray()
+                    BitConverter.ToInt32(data.Skip(4).Take(4).Reverse().ToArray()),
+                    BitConverter.ToInt16(data.Skip(8).Take(2).Reverse().ToArray()),
+                    BitConverter.ToInt16(data.Skip(10).Take(2).Reverse().ToArray()),
+                    data.Skip(12).Take(8).ToArray()
                 );
-                Major = BitConverter.ToUInt16(advertisementData.Skip(20).Take(2).Reverse().ToArray());
-                Minor = BitConverter.ToUInt16(advertisementData.Skip(22).Take(2).Reverse().ToArray());
+                Major = BitConverter.ToUInt16(data.Skip(20).Take(2).Reverse().ToArray());
+                Minor = BitConverter.ToUInt16(data.Skip(22).Take(2).Reverse().ToArray());
             }
 
-            TxPower = (sbyte)advertisementData[advertisementData.Length - 1];
+            TxPower = (sbyte)data[data.Length - 1];
         }
 
 
