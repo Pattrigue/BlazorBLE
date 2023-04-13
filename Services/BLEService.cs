@@ -28,9 +28,11 @@ public class BLEService
         adapter.StopScanningForDevicesAsync();
     }
 
-    private void Adapter_DeviceDiscovered(object sender, DeviceEventArgs a)
+    private void Adapter_DeviceDiscovered(object sender, DeviceEventArgs args)
     {
-        IDevice device = a.Device;
+        IDevice device = args.Device;
+
+        if (!KBeaconData.IsProximityBeacon(device)) return;
 
         Console.WriteLine($"Found device: {device.Id} {device.Name}");
         devices.Add(device);
