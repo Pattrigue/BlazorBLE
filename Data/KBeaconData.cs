@@ -7,6 +7,7 @@
         public Guid Uuid { get; }
 
         public byte[] CompanyId { get; }
+
         public ushort Major { get; }
         public ushort Minor { get; }
         
